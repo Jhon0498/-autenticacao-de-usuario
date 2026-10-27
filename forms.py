@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, BooleanField
-from wtforms.validators import DataRequired
+from wtforms.validators import DataRequired, Email
 
 
 class FormularioAluno(FlaskForm):
@@ -9,6 +9,15 @@ class FormularioAluno(FlaskForm):
     usuario = StringField(
         'Qual é o seu nome?:',
         validators=[DataRequired()]
+    )
+
+    # E-mail para envio de notificação do novo usuário
+    email = StringField(
+        'Qual é o seu email (Envio de notificação do novo usuário)?',
+        validators=[DataRequired(), Email()],
+        render_kw={
+            'placeholder': 'Digite seu e-mail'
+        }
     )
 
     # Prontuário do usuário

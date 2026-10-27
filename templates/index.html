@@ -35,7 +35,7 @@
 
             {{ form.usuario(
                 class="form-control",
-                placeholder="Digite seu nome"
+                placeholder="Qual é seu nome?"
             ) }}
 
             {% for error in form.usuario.errors %}
@@ -46,12 +46,26 @@
 
         </div>
 
-        <br>
+                <!-- Campo de e-mail para notificação -->
+        <div class="form-group">
+
+            {{ form.email.label(class="form-label") }}
+
+            {{ form.email(
+                class="form-control",
+                placeholder="Qual é o seu email (Envio de notificação do novo usuário)?"
+            ) }}
+
+            {% for error in form.email.errors %}
+                <span class="text-danger">
+                    {{ error }}
+                </span>
+            {% endfor %}
+
+        </div>
 
         <!-- Checkbox -->
-        
 
-        <br>
 
         <!-- Botão -->
         {{ form.submit(class="btn btn-default") }}
@@ -70,5 +84,31 @@
     <hr>
 
     <!-- Relação de usuários -->
+    <h2>Relação de usuários cadastrados</h2>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nome do usuário</th>
+                <th>Função</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for usuario_cadastrado in users %}
+                <tr>
+                    <td>{{ usuario_cadastrado.username }}</td>
+                    <td>
+                        {% if usuario_cadastrado.role %}
+                            {{ usuario_cadastrado.role.name }}
+                        {% else %}
+                            Não definida
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
 
 {% endblock %}

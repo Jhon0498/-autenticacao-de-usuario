@@ -1,85 +1,78 @@
-# Flask Application Factory
+# Sistema de Cadastro de Alunos com Notificação por E-mail
 
-Aplicação web desenvolvida com Flask, organizada com o padrão **Application Factory**, Blueprints e separação de responsabilidades. O projeto demonstra uma estrutura modular para facilitar a manutenção, os testes e a evolução da aplicação.
+Aplicação web desenvolvida em Python com Flask para cadastrar usuários e enviar notificações por e-mail utilizando a API do Mailgun.
+
+## Funcionalidades
+
+- Cadastro de usuários por formulário.
+- Validação dos dados informados.
+- Verificação de usuários já cadastrados.
+- Envio de notificações por e-mail usando o Mailgun.
+- Inclusão do e-mail informado no formulário como destinatário adicional.
+- Envio de informações do cadastro, incluindo nome, usuário e prontuário fixo `PT3026931`.
+- Registro e consulta dos e-mails enviados.
+- Testes automatizados com Pytest.
 
 ## Tecnologias utilizadas
 
 - Python
 - Flask
+- Flask-WTF
 - Flask-SQLAlchemy
 - Flask-Migrate
-- Flask-Bootstrap
-- Flask-Moment
 - SQLite
+- Requests
+- Mailgun API
 - Pytest
 
 ## Estrutura do projeto
 
 ```text
-flask-application-factory-ok/
+cadastro-alunos-email/
 ├── app/
 │   ├── __init__.py
+│   ├── config.py
 │   ├── extensions.py
 │   └── models.py
 ├── main/
 │   ├── __init__.py
 │   ├── errors.py
+│   ├── routes.py
 │   └── views.py
 ├── migrations/
-│   └── versions/
-├── static/
 ├── templates/
 ├── tests/
-│   └── test_app.py
+├── forms.py
 ├── config.py
 ├── flasky.py
-├── forms.py
 ├── requirements.txt
 └── .gitignore
 ```
 
-## Funcionalidades
-
-- Cadastro e consulta de usuários.
-- Registro de informações de e-mails enviados.
-- Integração com banco de dados por meio do SQLAlchemy.
-- Gerenciamento de alterações no banco com Flask-Migrate.
-- Organização das rotas utilizando Blueprints.
-- Tratamento de erros HTTP 404 e 500.
-- Testes automatizados com Pytest.
-
-## Organização da aplicação
-
-**Application Factory:** a função `create_app()` centraliza a criação e a configuração da aplicação Flask.
-
-**Blueprints:** as rotas e os tratamentos de erros são organizados em módulos separados.
-
-**Extensões:** as integrações com banco de dados, migrações e bibliotecas auxiliares são inicializadas em `app/extensions.py`.
-
-**Configurações:** o arquivo `config.py` reúne configurações para diferentes ambientes, como desenvolvimento, testes e produção.
+A estrutura acima é ilustrativa. Os arquivos listados devem corresponder à versão atual do repositório.
 
 ## Como executar localmente
 
 ### 1. Clonar o repositório
 
 ```bash
-git clone https://github.com/Jhon0498/flask-application-factory-ok.git
-cd flask-application-factory-ok
+git clone https://github.com/Jhon0498/cadastro-alunos-email.git
+cd cadastro-alunos-email
 ```
 
-### 2. Criar um ambiente virtual
+### 2. Criar e ativar um ambiente virtual
 
 ```bash
 python -m venv venv
 ```
 
-Ativar no Windows:
+No Windows:
 
 ```bash
 venv\Scripts\activate
 ```
 
-Ativar no Linux ou macOS:
+No Linux ou macOS:
 
 ```bash
 source venv/bin/activate
@@ -93,7 +86,16 @@ pip install -r requirements.txt
 
 ### 4. Configurar as variáveis de ambiente
 
-Crie um arquivo `.env` conforme as configurações necessárias no projeto. Defina a chave secreta e os parâmetros de conexão com o banco de dados. Não publique senhas, tokens ou outras credenciais no GitHub.
+Configure as variáveis necessárias no arquivo `.env`, de acordo com `config.py`:
+
+- `SECRET_KEY` ou `FLASK_SECRET_KEY`
+- `DATABASE_URL`, caso seja utilizada uma URL de banco de dados personalizada
+- `FLASKY_ADMIN`
+- `MAILGUN_API_KEY`
+- `MAILGUN_DOMAIN`
+- `MAILGUN_BASE_URL`, se necessário
+
+Não publique senhas, tokens ou chaves privadas no GitHub.
 
 ### 5. Executar a aplicação
 
@@ -109,15 +111,15 @@ http://127.0.0.1:5000
 
 ## Testes
 
-Para executar os testes automatizados:
+Execute os testes automatizados com:
 
 ```bash
 python -m pytest -v tests/
 ```
 
-## Objetivo do projeto
+## Objetivo acadêmico
 
-Praticar a organização de aplicações Flask por meio de uma arquitetura modular, utilizando Application Factory, Blueprints, configurações separadas, extensões reutilizáveis e testes automatizados.
+Projeto desenvolvido para praticar o desenvolvimento de aplicações web com Flask, formulários, banco de dados, organização modular, envio de notificações por API e testes automatizados.
 
 ## Autor
 
