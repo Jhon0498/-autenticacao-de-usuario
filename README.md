@@ -1,17 +1,20 @@
-# Sistema de Cadastro de Alunos com Notificação por E-mail
+# Cadastro de Alunos com Notificação por E-mail
 
-Aplicação web desenvolvida em Python com Flask para cadastrar usuários e enviar notificações por e-mail utilizando a API do Mailgun.
+Aplicação web desenvolvida em Python com Flask para realizar o cadastro de alunos e enviar notificações por e-mail utilizando a API do Mailgun.
+
+O projeto foi organizado em módulos para facilitar a manutenção, a organização do código e a realização de testes automatizados.
 
 ## Funcionalidades
 
-- Cadastro de usuários por formulário.
-- Validação dos dados informados.
-- Verificação de usuários já cadastrados.
-- Envio de notificações por e-mail usando o Mailgun.
-- Inclusão do e-mail informado no formulário como destinatário adicional.
-- Envio de informações do cadastro, incluindo nome, usuário e prontuário fixo `PT3026931`.
-- Registro e consulta dos e-mails enviados.
-- Testes automatizados com Pytest.
+- Cadastro de usuários com nome e usuário.
+- Utilização do prontuário `PT3026931`.
+- Envio de notificações por meio da API do Mailgun.
+- Envio para os destinatários configurados na aplicação, incluindo o endereço institucional e `flaskaulasweb@zohomail.com`.
+- Campo para informar um endereço de e-mail adicional.
+- Registro dos envios de e-mail no banco de dados.
+- Página para consultar o histórico de e-mails enviados.
+- Tratamento de erros durante o envio de mensagens.
+- Testes automatizados com pytest.
 
 ## Tecnologias utilizadas
 
@@ -20,9 +23,11 @@ Aplicação web desenvolvida em Python com Flask para cadastrar usuários e envi
 - Flask-WTF
 - Flask-SQLAlchemy
 - Flask-Migrate
+- Flask-Bootstrap
+- Flask-Moment
 - SQLite
-- Requests
 - Mailgun API
+- Requests
 - Pytest
 
 ## Estrutura do projeto
@@ -37,94 +42,100 @@ cadastro-alunos-email/
 ├── main/
 │   ├── __init__.py
 │   ├── errors.py
-│   ├── routes.py
 │   └── views.py
-├── migrations/
-├── templates/
+├── models/
+│   ├── __init__.py
+│   └── usuario.py
+├── services/
+│   ├── __init__.py
+│   └── email_service.py
 ├── tests/
-├── forms.py
+│   ├── test_app.py
+│   └── test_email_service.py
+├── templates/
+│   └── index.html
+├── static/
 ├── config.py
+├── forms.py
 ├── flasky.py
 ├── requirements.txt
-└── .gitignore
+└── README.md
 ```
 
-A estrutura acima é ilustrativa. Os arquivos listados devem corresponder à versão atual do repositório.
+**Observação:** a estrutura acima representa os principais arquivos do projeto. Outros templates, arquivos estáticos e arquivos de migração podem existir no repositório.
 
-## Como executar localmente
+## Organização por módulos
 
-### 1. Clonar o repositório
+### `app/`
 
-```bash
-git clone https://github.com/Jhon0498/cadastro-alunos-email.git
-cd cadastro-alunos-email
+Contém a criação da aplicação Flask, as extensões utilizadas, as configurações e os modelos do banco de dados.
+
+### `main/`
+
+Contém o Blueprint principal, as visualizações e o tratamento de erros da aplicação.
+
+### `services/`
+
+Contém os serviços separados da lógica das páginas. O arquivo `email_service.py` é responsável por preparar e enviar as notificações pelo Mailgun.
+
+### `models/`
+
+Contém o pacote de modelos auxiliares. Os modelos atualmente utilizados pela aplicação estão definidos em `app/models.py`.
+
+### `tests/`
+
+Contém os testes automatizados das páginas e do serviço de envio de e-mails.
+
+## Configuração do Mailgun
+
+A aplicação utiliza a API do Mailgun para enviar notificações, evitando depender de um servidor SMTP local.
+
+Configure as variáveis de ambiente necessárias no arquivo `.env`, de acordo com a leitura realizada em `config.py`:
+
+```dotenv
+FLASKY_ADMIN=flaskaulasweb@zohomail.com,seu-email-institucional
+MAILGUN_API_KEY=sua-chave-do-mailgun
+MAILGUN_DOMAIN=seu-dominio-configurado-no-mailgun
+MAILGUN_BASE_URL=https://api.mailgun.net
+SECRET_KEY=sua-chave-secreta
 ```
 
-### 2. Criar e ativar um ambiente virtual
+Substitua os valores de exemplo pelos dados da sua configuração. Utilize o endereço institucional real no lugar de `seu-email-institucional`.
 
-```bash
-python -m venv venv
-```
+**Importante:** não publique o arquivo `.env`, chaves de API ou senhas no GitHub. Os destinatários também devem estar configurados corretamente no ambiente de execução.
 
-No Windows:
+## Como funciona o envio de e-mails
 
-```bash
-venv\Scripts\activate
-```
+1. O usuário preenche e envia o formulário de cadastro.
+2. A aplicação processa os dados informados.
+3. O serviço de e-mail reúne os destinatários configurados e o endereço adicional, quando fornecido.
+4. A mensagem é enviada por meio da API do Mailgun.
+5. A mensagem contém o usuário cadastrado, o nome do aluno e o prontuário.
+6. Quando o Mailgun aceita a solicitação, a aplicação registra o resultado no banco de dados.
+7. O histórico pode ser consultado na página `/emails-enviados`.
 
-No Linux ou macOS:
+A aceitação da solicitação pelo Mailgun não garante, por si só, a entrega final da mensagem na caixa de entrada.
 
-```bash
-source venv/bin/activate
-```
+## Executar os testes
 
-### 3. Instalar as dependências
-
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Configurar as variáveis de ambiente
-
-Configure as variáveis necessárias no arquivo `.env`, de acordo com `config.py`:
-
-- `SECRET_KEY` ou `FLASK_SECRET_KEY`
-- `DATABASE_URL`, caso seja utilizada uma URL de banco de dados personalizada
-- `FLASKY_ADMIN`
-- `MAILGUN_API_KEY`
-- `MAILGUN_DOMAIN`
-- `MAILGUN_BASE_URL`, se necessário
-
-Não publique senhas, tokens ou chaves privadas no GitHub.
-
-### 5. Executar a aplicação
-
-```bash
-python flasky.py
-```
-
-O endereço local padrão do Flask é:
-
-```text
-http://127.0.0.1:5000
-```
-
-## Testes
-
-Execute os testes automatizados com:
+Para executar os testes automatizados, utilize:
 
 ```bash
 python -m pytest -v tests/
 ```
 
-## Objetivo acadêmico
+Os testes verificam as páginas principais e simulam respostas da API do Mailgun, permitindo testar o serviço sem enviar mensagens reais.
 
-Projeto desenvolvido para praticar o desenvolvimento de aplicações web com Flask, formulários, banco de dados, organização modular, envio de notificações por API e testes automatizados.
+## Executar a aplicação
 
-## Autor
+Com as dependências instaladas e as variáveis de ambiente configuradas, execute:
 
-Jhonatan Mendes Morão
+```bash
+python flasky.py
+```
 
-## Licença
+O comando inicia a aplicação conforme a configuração definida no projeto. Em ambientes hospedados, como o PythonAnywhere, siga também as configurações específicas do servidor.
 
-Projeto desenvolvido para fins educacionais.
+## Repositório
+
+GitHub: https://github.com/Jhon0498/cadastro-alunos-email
