@@ -1,12 +1,15 @@
+<!-- Define que este template herda a estrutura principal do ficheiro "base.html" -->
 {% extends "base.html" %}
 
+<!-- Define o título da página na barra do navegador -->
 {% block title %}Flasky{% endblock %}
 
+<!-- Bloco onde será inserido o conteúdo principal da página -->
 {% block page_content %}
 
 <div class="container">
 
-    <!-- Saudação -->
+    <!-- Seção de Saudação: Exibe uma mensagem personalizada com o nome se disponível, ou um padrão -->
     {% if nome %}
         <h1>Olá, {{ nome }}!</h1>
     {% else %}
@@ -15,29 +18,32 @@
 
     <p>Prazer em conhecê-lo!</p>
 
-    <!-- Mensagem -->
+    <!-- Exibe uma mensagem adicional enviada pelo servidor, se existir -->
     {% if mensagem %}
         <p>{{ mensagem }}</p>
     {% endif %}
 
     <hr>
 
-    <!-- Formulário -->
+    <!-- Formulário principal de cadastro/envio de dados -->
     <form method="POST">
 
-        <!-- Proteção CSRF -->
+        <!-- Campo oculto para proteção contra ataques CSRF (Cross-Site Request Forgery) -->
         {{ form.hidden_tag() }}
 
-        <!-- Campo de usuário -->
+        <!-- Campo de entrada do Nome do Usuário -->
         <div class="form-group">
 
+            <!-- Label/Etiqueta gerada pelo Flask-WTF -->
             {{ form.usuario.label(class="form-label") }}
 
+            <!-- Campo do tipo text com o placeholder -->
             {{ form.usuario(
                 class="form-control",
                 placeholder="Qual é seu nome?"
             ) }}
 
+            <!-- Renderiza eventuais erros de validação do campo de usuário -->
             {% for error in form.usuario.errors %}
                 <span class="text-danger">
                     {{ error }}
@@ -46,16 +52,19 @@
 
         </div>
 
-                <!-- Campo de e-mail para notificação -->
+        <!-- Campo de entrada do E-mail para notificação -->
         <div class="form-group">
 
+            <!-- Label/Etiqueta gerada pelo Flask-WTF -->
             {{ form.email.label(class="form-label") }}
 
+            <!-- Campo do tipo email/text com o placeholder -->
             {{ form.email(
                 class="form-control",
                 placeholder="Qual é o seu email (Envio de notificação do novo usuário)?"
             ) }}
 
+            <!-- Renderiza eventuais erros de validação do campo de e-mail -->
             {% for error in form.email.errors %}
                 <span class="text-danger">
                     {{ error }}
@@ -64,15 +73,15 @@
 
         </div>
 
-        <!-- Checkbox -->
+        <!-- Checkbox (espaço reservado para caso queiras adicionar opções) -->
 
 
-        <!-- Botão -->
+        <!-- Botão de submissão do formulário principal -->
         {{ form.submit(class="btn btn-default") }}
 
     </form>
 
-    <!-- Erro -->
+    <!-- Exibição de alertas de erro gerais (se o backend retornar a variável 'erro') -->
     {% if erro %}
         <br>
 
@@ -83,26 +92,111 @@
 
     <hr>
 
-    <!-- Relação de usuários -->
+    <!-- Tabela com a lista de usuários cadastrados no banco de dados -->
     <h2>Relação de usuários cadastrados</h2>
 
     <table class="table table-striped">
         <thead>
             <tr>
-                <th>Nome do usuário</th>
+                <th style="width: 50%;">Nome do usuário</th>
                 <th>Função</th>
+                <th></th> <!-- Coluna destinada às ações (como Excluir) -->
             </tr>
         </thead>
         <tbody>
+            <!-- Loop Jinja2 para percorrer todos os usuários enviados pelo backend -->
             {% for usuario_cadastrado in users %}
                 <tr>
-                    <td>{{ usuario_cadastrado.username }}</td>
+                    <!-- Coluna do Nome / Edição de Usuário com largura fixa para alinhar todos os botões na mesma vertical -->
                     <td>
+                        <!-- Formulário individual para enviar a atualização do nome via POST -->
+                        <form
+                            method="POST"
+                            action="{{ url_for('main.editar_usuario', id=usuario_cadastrado.id) }}"
+                            style="display: flex; align-items: center; justify-content: space-between; margin: 0; width: 100%;"
+                        >
+                            <!-- Token CSRF obrigatório do Flask-WTF -->
+                            {{ form.hidden_tag() }}
+
+                            <!-- Texto simples com o nome do usuário (visível por padrão) / Input de edição com largura reservada -->
+                            <div style="width: 65%;">
+                                <span id="nome-{{ usuario_cadastrado.id }}">
+                                    {{ usuario_cadastrado.name }}
+                                </span>
+
+                                <input
+                                    type="text"
+                                    name="nome"
+                                    id="campo-{{ usuario_cadastrado.id }}"
+                                    value="{{ usuario_cadastrado.name }}"
+                                    style="display: none; width: 100%;"
+                                    required
+                                >
+                            </div>
+
+                            <!-- Div contendo os botões alinhados perfeitamente em coluna fixa -->
+                            <div style="width: 30%; text-align: left;">
+                                <!-- Botão para ativar o modo de edição (chama a função JS) -->
+                                <button
+                                    type="button"
+                                    id="editar-{{ usuario_cadastrado.id }}"
+                                    onclick="editarNome({{ usuario_cadastrado.id }})"
+                                >
+                                    Editar
+                                </button>
+
+                                <!-- Botão para submeter as alterações (visível apenas no modo de edição) -->
+                                <button
+                                    type="submit"
+                                    id="salvar-{{ usuario_cadastrado.id }}"
+                                    style="display: none;"
+                                >
+                                    Salvar
+                                </button>
+
+                                <!-- Botão para cancelar a edição (visível apenas no modo de edição) -->
+                                <button
+                                    type="button"
+                                    id="cancelar-{{ usuario_cadastrado.id }}"
+                                    style="display: none;"
+                                    onclick="cancelarEdicao({{ usuario_cadastrado.id }}, '{{ usuario_cadastrado.name | replace("'", "\\'") }}')"
+                                >
+                                    Cancelar
+                                </button>
+                            </div>
+                        </form>
+                    </td>
+
+                    <!-- Coluna com a Função/Role do usuário -->
+                    <td>
+                        <!-- Verifica se o usuário possui uma Role associada -->
                         {% if usuario_cadastrado.role %}
                             {{ usuario_cadastrado.role.name }}
                         {% else %}
                             Não definida
                         {% endif %}
+                    </td>
+
+                    <!-- Coluna com o botão de Exclusão -->
+                    <td>
+                        <!-- Formulário individual para exclusão do usuário -->
+                        <form
+                            method="POST"
+                            action="{{ url_for('main.excluir_usuario', id=usuario_cadastrado.id) }}"
+                            style="display: inline;"
+                            onsubmit="return confirm('Deseja realmente excluir este usuário?');"
+                        >
+                            <!-- Token CSRF obrigatório -->
+                            {{ form.hidden_tag() }}
+
+                            <!-- Botão estilizado de exclusão -->
+                            <button
+                                type="submit"
+                                style="color: white; background-color: #D9534F; border: 1px solid #D9534F; border-radius: 6px;"
+                            >
+                                Excluir
+                            </button>
+                        </form>
                     </td>
                 </tr>
             {% endfor %}
@@ -110,5 +204,30 @@
     </table>
 
 </div>
+
+<!-- Scripts JavaScript para controlar a alternância entre a leitura e a edição do nome -->
+<script>
+    // Função para ligar o modo de edição: esconde o nome e botão Editar, mostra o input e botões Salvar/Cancelar
+    function editarNome(id) {
+        document.getElementById('nome-' + id).style.display = 'none';
+        document.getElementById('campo-' + id).style.display = 'inline-block';
+        document.getElementById('editar-' + id).style.display = 'none';
+        document.getElementById('salvar-' + id).style.display = 'inline-block';
+        document.getElementById('cancelar-' + id).style.display = 'inline-block';
+
+        // Dá foco automático ao input para facilitar a digitação
+        document.getElementById('campo-' + id).focus();
+    }
+
+    // Função para cancelar a edição: restaura o valor original e esconde o modo de edição
+    function cancelarEdicao(id, nomeOriginal) {
+        document.getElementById('campo-' + id).value = nomeOriginal;
+        document.getElementById('nome-' + id).style.display = 'inline';
+        document.getElementById('campo-' + id).style.display = 'none';
+        document.getElementById('editar-' + id).style.display = 'inline';
+        document.getElementById('salvar-' + id).style.display = 'none';
+        document.getElementById('cancelar-' + id).style.display = 'none';
+    }
+</script>
 
 {% endblock %}
