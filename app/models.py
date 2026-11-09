@@ -1,135 +1,60 @@
-from datetime import datetime
-from app.extensions import db
+from werkzeug.security import generate_password_hash, check_password_hash
+from itsdangerous import URLSafeTimedSerializer as Serializer
+from flask import current_app
+from flask_login import UserMixin
+from . import db, login_manager
 
 
 class Role(db.Model):
-
-    # Nome da tabela no banco
     __tablename__ = 'roles'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), unique=True)
+    users = db.relationship('User', backref='role', lazy='dynamic')
 
-    # Identificador da função
-    id = db.Column(
-        db.Integer,
-        primary_key=True
-    )
-
-    # Nome da função
-    name = db.Column(
-        db.String(64),
-        unique=True,
-        index=True,
-        nullable=False
-    )
-
-    # Relacionamento entre Role e User
-    users = db.relationship(
-        'User',
-        backref='role',
-        lazy='dynamic'
-    )
-
-    # Representação do objeto
     def __repr__(self):
-        return f'<Role {self.name}>'
+        return '<Role %r>' % self.name
 
 
-class User(db.Model):
-
-    # Nome da tabela no banco
+class User(UserMixin, db.Model):
     __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(64), unique=True, index=True)
+    username = db.Column(db.String(64), unique=True, index=True)
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
+    password_hash = db.Column(db.String(128))
+    confirmed = db.Column(db.Boolean, default=False)
 
-    # Identificador do usuário
-    id = db.Column(
-        db.Integer,
-        primary_key=True
-    )
+    @property
+    def password(self):
+        raise AttributeError('password is not a readable attribute')
 
-    # Nome de usuário usado no formulário
-    username = db.Column(
-        db.String(64),
-        unique=True,
-        index=True,
-        nullable=False
-    )
+    @password.setter
+    def password(self, password):
+        self.password_hash = generate_password_hash(password)
 
-    # Nome completo do usuário
-    name = db.Column(
-        db.String(128),
-        nullable=False
-    )
+    def verify_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
-    # Número do prontuário
-    prontuario = db.Column(
-        db.String(64),
-        unique=True,
-        nullable=True
-    )
+    def generate_confirmation_token(self, expiration=3600):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        return s.dumps({'confirm': self.id})
 
-    # Liga o usuário à tabela de funções
-    role_id = db.Column(
-        db.Integer,
-        db.ForeignKey('roles.id')
-    )
+    def confirm(self, token):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token.encode('utf-8'))
+        except:
+            return False
+        if data.get('confirm') != self.id:
+            return False
+        self.confirmed = True
+        db.session.add(self)
+        return True
 
-    # Representação do objeto
     def __repr__(self):
-        return f'<User {self.username}>'
+        return '<User %r>' % self.username
 
 
-class EmailEnviado(db.Model):
-
-    # Nome da tabela no banco
-    __tablename__ = 'emails_enviados'
-
-    # Identificador do e-mail
-    id = db.Column(
-        db.Integer,
-        primary_key=True
-    )
-
-    # Data e hora em que o e-mail foi enviado
-    data_envio = db.Column(
-        db.DateTime,
-        nullable=False,
-        default=datetime.utcnow
-    )
-
-    # Usuário utilizado no cadastro
-    username = db.Column(
-        db.String(64),
-        nullable=False
-    )
-
-    # Nome completo do usuário
-    nome = db.Column(
-        db.String(128),
-        nullable=False
-    )
-
-    # Número do prontuário
-    prontuario = db.Column(
-        db.String(64),
-        nullable=True
-    )
-
-    # E-mail que recebeu a mensagem
-    destinatario = db.Column(
-        db.Text,
-        nullable=False
-    )
-
-    # Assunto do e-mail
-    assunto = db.Column(
-        db.String(255),
-        nullable=False
-    )
-
-    # Status do envio
-    status = db.Column(
-        db.String(50),
-        nullable=False
-    )
-
-    # Representação do objeto
-    def __repr__(self):
-        return f'<EmailEnviado {self.id}>'
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
