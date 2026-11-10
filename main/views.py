@@ -1,4 +1,3 @@
-
 # Importa as funções necessárias do Flask.
 from flask import (
     render_template,
@@ -28,9 +27,15 @@ from services.email_service import enviar_email_mailgun
 from main import main
 
 
-# Rota principal para cadastrar e listar usuários.
-@main.route('/', methods=['GET', 'POST'])
+# Página inicial do Flasky.
+@main.route('/')
 def index():
+    return render_template('home.html')
+
+
+# Rota para cadastrar e listar usuários.
+@main.route('/cadastro', methods=['GET', 'POST'])
+def cadastro():
 
     form = FormularioAluno()
     usuarios_banco = User.query.all()
@@ -191,5 +196,3 @@ def emails_enviados():
         'emails_enviados.html',
         emails=emails
     )
-
-

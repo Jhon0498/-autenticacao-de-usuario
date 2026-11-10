@@ -31,14 +31,18 @@ def create_app(config_name="default"):
     login_manager.init_app(app)
 
     # Define a página de login para usuários não autenticados.
-    login_manager.login_view = 'main.login'
+    login_manager.login_view = 'auth.login'
 
     # Registra os modelos do banco de dados.
     from app import models
 
-    # Importa e registra as rotas.
+    # Importa e registra as rotas principais.
     from main import main as main_blueprint
     app.register_blueprint(main_blueprint)
+
+    # Importa e registra as rotas de autenticação.
+    from app.auth import auth as auth_blueprint
+    app.register_blueprint(auth_blueprint)
 
     # Retorna a aplicação pronta.
     return app
