@@ -1,3 +1,4 @@
+
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, BooleanField
 from wtforms.validators import DataRequired, Email
@@ -38,22 +39,26 @@ class FormularioAluno(FlaskForm):
 
 class LoginForm(FlaskForm):
 
-    # Campo de usuário
-    usuario = StringField(
-        validators=[DataRequired()],
+    # Campo de e-mail
+    email = StringField(
+        'Email',
+        validators=[DataRequired(), Email()],
         render_kw={
-            'placeholder': 'Usuário ou e-mail'
+            'placeholder': 'Email'
         }
     )
 
     # Campo de senha
     senha = PasswordField(
-        'Informe a sua senha',
+        'Password',
         validators=[DataRequired()],
         render_kw={
-            'placeholder': 'Informe a sua senha',
+            'placeholder': 'Password',
         }
     )
 
+    # Opção para manter o usuário conectado
+    remember_me = BooleanField('Keep me logged in')
+
     # Botão de envio
-    submit = SubmitField('Enviar')
+    submit = SubmitField('Log In')

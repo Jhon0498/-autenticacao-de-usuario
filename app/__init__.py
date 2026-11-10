@@ -1,3 +1,4 @@
+
 # Importa recursos para criar a aplicação Flask.
 from flask import Flask
 
@@ -5,7 +6,7 @@ from flask import Flask
 from config import config
 
 # Importa as extensões compartilhadas.
-from app.extensions import db, migrate, bootstrap, moment
+from app.extensions import db, migrate, bootstrap, moment, login_manager
 
 
 # Cria e configura a aplicação.
@@ -27,6 +28,10 @@ def create_app(config_name="default"):
     migrate.init_app(app, db)
     bootstrap.init_app(app)
     moment.init_app(app)
+    login_manager.init_app(app)
+
+    # Define a página de login para usuários não autenticados.
+    login_manager.login_view = 'main.login'
 
     # Registra os modelos do banco de dados.
     from app import models
